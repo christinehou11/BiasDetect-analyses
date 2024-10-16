@@ -6,7 +6,9 @@ suppressPackageStartupMessages({
 })
 set.seed(123)
 
-#build spe
+# ---------
+# write spe
+# ---------
 counts = rbind(
     read.csv(here("processed-data","spatialHPC_SRT",
                 "spe-hpc_sub4_svgs-only_counts-1.csv"), 
@@ -24,6 +26,9 @@ rdata = read.csv(
         "spe-hpc_sub4_svgs-only_rowData.csv"), 
     row.names=1)
 
+# ---------
+# load data
+# ---------
 spe = SpatialExperiment(
     assay = list("counts"=counts), 
     colData = cdata, rowData = rdata,
