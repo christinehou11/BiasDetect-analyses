@@ -112,6 +112,9 @@ seuInt
 # -----------
 # save object
 # -----------
+save(spe,
+    file = here("processed-data","spatialHPC_SRT","spe.rda"))
+
 write.csv(seuInt@meta.data, 
         here("processed-data","spatialHPC_SRT",
         "seuInt-hpc_k-7_svgs_metadata.csv"), 
