@@ -1,13 +1,14 @@
+suppressPackageStartupMessages({
 library(here)
 library(SpatialExperiment)
 library(dplyr)
 library(tidyr)
 library(tibble)
+})
 
 # ---------
 # load data
 # ---------
-
 load(here("raw-data","spatialHPC_SRT","spe_precast_HE_domain.rda"))
 
 fix_order = distinct(as.data.frame(colData(spe)), 
@@ -42,7 +43,6 @@ dim(spe_sub4) # 2082 18945
 # -----------
 # save object
 # -----------
-
 write.csv(as.data.frame(as.matrix(counts(spe_sub4)[1:1000,])), 
         here("processed-data","spatialHPC_SRT",
             "spe-hpc_sub4_svgs-only_counts-1.csv"),
