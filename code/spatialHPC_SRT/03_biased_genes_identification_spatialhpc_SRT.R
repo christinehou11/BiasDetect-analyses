@@ -2,9 +2,9 @@ if (!require("devtools")) install.packages("devtools")
 remotes::install_github("christinehou11/BiasDetect", force=TRUE)
 
 suppressPackageStartupMessages({
-  library(BiasDetect)
-  library(dplyr)
-  library(here)
+    library(BiasDetect)
+    library(dplyr)
+    library(here)
 })
 
 # ---------
