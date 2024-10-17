@@ -51,7 +51,9 @@ spe
 #   spatialCoords names(2) : array_row array_col
 # imgData names(0):
 
-#reformat spe to seurat list
+# ---------
+# reformat to seurat list
+# ---------
 l2 = unique(spe$sample_id)
 names(l2) = l2
 l2 = lapply(l2, function(x) spe[,colData(spe)$sample_id==x])
@@ -90,7 +92,9 @@ srt.sets
 # Active assay: RNA (2082 features, 0 variable features)
 # 2 layers present: counts, data
 
-#run precast
+# ---------
+# run precast
+# ---------
 preobj <- CreatePRECASTObject(seuList = srt.sets,
                             customGenelist=rownames(spe),
                             premin.spots=0, premin.features=0, 
@@ -119,6 +123,9 @@ seuInt
 # -----------
 save(spe,
     file = here("processed-data","spatialHPC_SRT","spe.rda"))
+
+save(srt.sets,
+    file = here("processed-data","spatialHPC_SRT","srt_sets.rda"))
 
 write.csv(seuInt@meta.data, 
         here("processed-data","spatialHPC_SRT",
