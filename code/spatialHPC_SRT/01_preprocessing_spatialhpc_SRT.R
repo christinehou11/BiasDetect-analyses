@@ -11,33 +11,33 @@ library(tibble)
 # ---------
 load(here("raw-data","spatialHPC_SRT","spe_precast_HE_domain.rda"))
 
-fix_order = distinct(as.data.frame(colData(spe)), 
+fix_order <- distinct(as.data.frame(colData(spe)), 
                 slide, array, brnum, sample_id, position, sex) %>% 
             arrange(slide, array)
-sub4 = fix_order$sample_id[c(14,16, 20,21)]
-spe_sub4 = spe[,spe$sample_id %in% sub4]
+sub4 <- fix_order$sample_id[c(14,16, 20,21)]
+spe_sub4 <- spe[,spe$sample_id %in% sub4]
 
 #load and reformat nnSVG results
 load(here("raw-data","spatialHPC_SRT","nnSVG_outs_HE_only.rda"))
 
-res_df = pivot_longer(
-            rownames_to_column(as.data.frame(res_ranks), var="gene_id"), 
+res_df <- pivot_longer(
+            rownames_to_column(as.data.frame(res_ranks), var<-"gene_id"), 
             colnames(res_ranks), names_to="sample_id", values_to="rank", 
             values_drop_na=T)
 
 # filter to only the top 2k sig features in the 4 samples we're using
-res_df2 = filter(res_df, 
+res_df2 <- filter(res_df, 
             sample_id %in% c("V11L05-333_B1","V11L05-333_D1",
                             "V11L05-335_D1","V11L05-336_A1"),
-            rank<=2000)
+            rank =2000)
 
 # further filter to only features that are in the top 2k of >1 sample
-svgs = group_by(res_df2, gene_id) %>% 
+svgs <- group_by(res_df2, gene_id) %>% 
         tally() %>% 
         filter(n>1) 
 nrow(svgs) # 2082
 
-spe_sub4 = spe_sub4[svgs$gene_id,]
+spe_sub4 <- spe_sub4[svgs$gene_id,]
 dim(spe_sub4) # 2082 18945
 
 # -----------
