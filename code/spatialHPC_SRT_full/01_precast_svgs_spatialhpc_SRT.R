@@ -1,55 +1,56 @@
+if (!require("devtools")) install.packages("devtools")
+remotes::install_github("christinehou11/humanHippocampus2024", force=TRUE)
+
 suppressPackageStartupMessages({
     library(Seurat)
     library(PRECAST)
     library(dplyr)
     library(here)
+    library(ExperimentHub)
+    library(tidyr)
+    library(tibble)
 })
 set.seed(123)
 
 # ---------
-# write spe
-# ---------
-counts = rbind(
-    read.csv(here("processed-data","spatialHPC_SRT",
-                "spe-hpc_sub4_svgs-only_counts-1.csv"), 
-    row.names=1),
-    read.csv(here("processed-data","spatialHPC_SRT",
-                "spe-hpc_sub4_svgs-only_counts-2.csv"), 
-    row.names=1))
-colnames(counts) = gsub("\\.","-",colnames(counts))
-cdata = read.csv(
-    here("processed-data","spatialHPC_SRT",
-        "spe-hpc_sub4_svgs-only_colData.csv"), 
-    row.names=1)
-rdata = read.csv(
-    here("processed-data","spatialHPC_SRT",
-        "spe-hpc_sub4_svgs-only_rowData.csv"), 
-    row.names=1)
-
-# ---------
 # load data
 # ---------
-spe = SpatialExperiment(
-    assay = list("counts"=counts), 
-    colData = cdata, rowData = rdata,
-    spatialCoordsNames = c("array_row", "array_col"))
+ehub <- ExperimentHub()
+myfiles <- query(ehub, "humanHippocampus2024")
+spe <- myfiles[["EH9605"]]
 spe
 # class: SpatialExperiment 
-# dim: 2082 18945 
-# metadata(0):
-#   assays(1): counts
-# rownames(2082): ENSG00000002330 ENSG00000002586 ... ENSG00000286214
-# ENSG00000286961
-# rowData names(6): source type ... gene_name gene_type
-# colnames(18945): AAACAACGAATAGTTC-1_V11L05-333_B1
-# AAACAAGTATCTCCCA-1_V11L05-333_B1 ... TTGTTTGTATTACACG-1_V11L05-336_A1
-# TTGTTTGTGTAAATTC-1_V11L05-336_A1
-# colData names(10): sample_id slide ... expr_chrM expr_chrM_ratio
-# reducedDimNames(0):
-#   mainExpName: NULL
+# dim: 31483 150917 
+# metadata(1): Obtained_from
+# assays(2): counts logcounts
+# rownames(31483): MIR1302-2HG AL627309.1 ... AC007325.4 AC007325.2
+# rowData names(7): source type ... gene_type gene_search
+# colnames(150917): AAACAACGAATAGTTC-1_V10B01-086_D1
+# AAACAAGTATCTCCCA-1_V10B01-086_D1 ... TTGTTTCCATACAACT-1_Br2720_B1
+# TTGTTTGTATTACACG-1_Br2720_B1
+# colData names(150): sample_id in_tissue ... nmf99 nmf100
+# reducedDimNames(3): 10x_pca 10x_tsne 10x_umap
+# mainExpName: NULL
 # altExpNames(0):
-#   spatialCoords names(2) : array_row array_col
-# imgData names(0):
+#   spatialCoords names(2) : pxl_col_in_fullres pxl_row_in_fullres
+# imgData names(4): sample_id image_id data scaleFactor
+
+load(here("raw-data","spatialHPC_SRT","nnSVG_outs_HE_only.rda"))
+
+res_df <- pivot_longer(
+  rownames_to_column(as.data.frame(res_ranks), var<-"gene_id"), 
+  colnames(res_ranks), names_to="sample_id", values_to="rank", 
+  values_drop_na=T)
+
+# filter to only the top 2k sig features in the 4 samples we're using
+res_df2 <- filter(res_df,rank <= 2000)
+
+# further filter to only features that are in the top 2k of >1 sample
+svgs <- group_by(res_df2, gene_id) %>% 
+  tally() %>% 
+  filter(n>1) 
+
+nrow(svgs) # 4009
 
 # ---------
 # reformat to seurat list
@@ -106,6 +107,7 @@ PRECASTObj <- PRECAST(PRECASTObj, K=7)
 
 #consolidate/ reformat results
 PRECASTObj <- SelectModel(PRECASTObj, criteria="MBIC")
+PRECASTObj
 # An object of class PRECASTObj 
 # with 4 datasets and  18945 spots in total, with spots for each dataset:  4985 4938 4483 4539 
 # 2081 common variable genes selected

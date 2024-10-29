@@ -5,6 +5,7 @@ suppressPackageStartupMessages({
     library(BiasDetect)
     library(dplyr)
     library(here)
+    library(SummarizedExperiment)
 })
 
 # ---------
