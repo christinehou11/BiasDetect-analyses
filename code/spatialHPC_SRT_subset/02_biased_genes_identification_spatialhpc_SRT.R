@@ -1,6 +1,3 @@
-if (!require("devtools")) install.packages("devtools")
-remotes::install_github("christinehou11/BiasDetect", force=TRUE)
-
 suppressPackageStartupMessages({
     library(BiasDetect)
     library(dplyr)
@@ -11,13 +8,13 @@ suppressPackageStartupMessages({
 # ---------
 # load data
 # ---------
-load(here("processed-data","spatialHPC_SRT","spe.rda"))
+load(here("processed-data","spatialHPC_SRT","spe_sub4.rda"))
 
 # ---------
 # biased gene identification
 # ---------
-SVGs <- rowData(spe)$gene_name
-batch_df <- BiasDetect::featureSelect(spe, 
+SVGs <- rowData(spe_sub4)$gene_id
+batch_df <- BiasDetect::featureSelect(spe_sub4, 
                                     batch_effect = "sample_id", VGs = SVGs)
 head(batch_df)
 # gene gene_name dev_default rank_default dev_batch rank_batch

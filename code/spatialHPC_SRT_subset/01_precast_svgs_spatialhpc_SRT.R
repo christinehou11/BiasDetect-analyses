@@ -1,6 +1,3 @@
-if (!require("devtools")) install.packages("devtools")
-remotes::install_github("christinehou11/humanHippocampus2024", force=TRUE)
-
 suppressPackageStartupMessages({
     library(Seurat)
     library(PRECAST)
@@ -16,8 +13,7 @@ set.seed(123)
 # load data
 # ---------
 ehub <- ExperimentHub()
-myfiles <- query(ehub, "humanHippocampus2024")
-spe <- myfiles[["EH9605"]]
+spe <- ehub[["EH9605"]]
 spe
 # class: SpatialExperiment 
 # dim: 31483 150917 
@@ -35,12 +31,18 @@ spe
 #   spatialCoords names(2) : pxl_col_in_fullres pxl_row_in_fullres
 # imgData names(4): sample_id image_id data scaleFactor
 
+# ---------
+# choose the subset (4 samples) from raw SRT data
+# ---------
 fix_order = distinct(as.data.frame(colData(spe)), slide, array, brnum, sample_id, position, sex) %>% 
   arrange(slide, array)
 sub4 = fix_order$sample_id[c(14,16,
                              20,21)]
-spe_sub4 = spe[,spe$sample_id %in% sub4]
+spe_sub4 = spe[,spe$sample_id %in% sub4] # 31483, 18945
 
+# ---------
+# filtered the SVGs from selected samples
+# ---------
 load(here("raw-data","spatialHPC_SRT","nnSVG_outs_HE_only.rda"))
 
 res_df_sub4 <- pivot_longer(
@@ -48,18 +50,20 @@ res_df_sub4 <- pivot_longer(
   colnames(res_ranks), names_to="sample_id", values_to="rank", 
   values_drop_na=T)
 
-# filter to only the top 2k sig features in the 4 samples we're using
 res_df2_sub4 <- filter(res_df_sub4,
-                         sample_id %in% c("V11L05-333_B1","V11L05-333_D1","V11L05-335_D1","V11L05-336_A1"),
-                         rank <= 2000)
+    sample_id %in% c("V11L05-333_B1","V11L05-333_D1","V11L05-335_D1","V11L05-336_A1"),
+        rank <= 2000) # top 2k sig features
+nrow(res_df2_sub4) # 7559
 
-# further filter to only features that are in the top 2k of >1 sample
-svgs_sub4 <- group_by(res_df2_subset, gene_id) %>% 
+svgs_sub4 <- group_by(res_df2_sub4, gene_id) %>% 
   tally() %>% 
-  filter(n>1) 
+  filter(n>1) # >1 sample
 
-nrow(svgs_subset) # 2082
+nrow(svgs_sub4) # 2082
 
+# ---------
+# reformatted to SpatialExperiment object
+# ---------
 spe_sub4 <- spe_sub4[rowData(spe_sub4)$gene_id %in% svgs_sub4$gene_id,]
 rownames(spe_sub4) <- rowData(spe_sub4)$gene_id
 dim(spe_sub4) # 2082, 18945
@@ -136,10 +140,10 @@ seuInt
 # save object
 # -----------
 save(spe_sub4,
-    file = here("processed-data","spatialHPC_SRT","spe.rda"))
+    file = here("processed-data","spatialHPC_SRT","spe_sub4.rda"))
 
 save(srt.sets.sub4,
-    file = here("processed-data","spatialHPC_SRT","srt_sets.rda"))
+    file = here("processed-data","spatialHPC_SRT","srt_sets_sub4.rda"))
 
 write.csv(seuInt@meta.data, 
         here("processed-data","spatialHPC_SRT",
