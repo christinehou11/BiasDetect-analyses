@@ -53,7 +53,7 @@ res_df_sub4 <- pivot_longer(
 res_df2_sub4 <- filter(res_df_sub4,
     sample_id %in% c("V11L05-333_B1","V11L05-333_D1","V11L05-335_D1","V11L05-336_A1"),
         rank <= 2000) # top 2k sig features
-nrow(res_df2_sub4) # 7559
+nrow(res_df2_sub4) # 7559, 3
 
 svgs_sub4 <- group_by(res_df2_sub4, gene_id) %>% 
   tally() %>% 
@@ -71,11 +71,11 @@ dim(spe_sub4) # 2082, 18945
 # ---------
 # reformat to seurat list
 # ---------
-l2 = unique(spe_sub4$sample_id)
-names(l2) = l2
-l2 = lapply(l2, function(x) spe_sub4[,colData(spe_sub4)$sample_id==x])
+l2_sub4 = unique(spe_sub4$sample_id)
+names(l2_sub4) = l2_sub4
+l2_sub4 = lapply(l2_sub4, function(x) spe_sub4[,colData(spe_sub4)$sample_id==x])
 
-srt.sets.sub4 = lapply(l2, function(x) {
+srt.sets.sub4 = lapply(l2_sub4, function(x) {
     colnames(counts(x)) <- rownames(colData(x))
     colData(x)$col <- spatialCoords(x)[,"pxl_col_in_fullres"]
     colData(x)$row <- spatialCoords(x)[,"pxl_row_in_fullres"]

@@ -1,5 +1,4 @@
-if (!require("devtools")) install.packages("devtools")
-remotes::install_github("christinehou11/humanHippocampus2024", force=TRUE)
+# library(humanHippocampus2024)
 
 suppressPackageStartupMessages({
     library(Seurat)
@@ -36,62 +35,40 @@ spe
 # imgData names(4): sample_id image_id data scaleFactor
 
 load(here("raw-data","spatialHPC_SRT","nnSVG_outs_HE_only.rda"))
+dim(res_ranks) # 7028, 36
 
 res_df <- pivot_longer(
   rownames_to_column(as.data.frame(res_ranks), var<-"gene_id"), 
   colnames(res_ranks), names_to="sample_id", values_to="rank", 
-  values_drop_na=T)
+  values_drop_na=T) 
+dim(res_df) # 107730, 3
 
-# filter to only the top 2k sig features in the 4 samples we're using
-res_df2 <- filter(res_df,rank <= 2000)
+res_df2 <- filter(res_df,rank <= 2000) # top 2k features
+dim(res_df2) # 69450, 3
 
-# further filter to only features that are in the top 2k of >1 sample
 svgs <- group_by(res_df2, gene_id) %>% 
   tally() %>% 
-  filter(n>1) 
+  filter(n>1)  # >1 sample
 
 nrow(svgs) # 4009
 
 # ---------
-# reformat to seurat list
+# reformat to Seurat list
 # ---------
 l2 = unique(spe$sample_id)
 names(l2) = l2
 l2 = lapply(l2, function(x) spe[,colData(spe)$sample_id==x])
 
 srt.sets = lapply(l2, function(x) {
-    colnames(counts(x)) <- rownames(colData(x))
-    colData(x)$col <- spatialCoords(x)[,"array_col"]
-    colData(x)$row <- spatialCoords(x)[,"array_row"]
-    count <- counts(x)
-    a1 <- CreateAssayObject(count, assay = "RNA", 
-                            min.features = 0, min.cells = 0)
-    CreateSeuratObject(a1, meta.data = as.data.frame(colData(x)))
+  colnames(counts(x)) <- rownames(colData(x))
+  colData(x)$col <- spatialCoords(x)[,"pxl_col_in_fullres"]
+  colData(x)$row <- spatialCoords(x)[,"pxl_row_in_fullres"]
+  count <- counts(x)
+  a1 <- CreateAssayObject(count, assay = "RNA", 
+                          min.features = 0, min.cells = 0)
+  CreateSeuratObject(a1, meta.data = as.data.frame(colData(x)))
 })
 srt.sets
-# $`Br3942_V11L05-333_B1`
-# An object of class Seurat 
-# 2082 features across 4985 samples within 1 assay 
-# Active assay: RNA (2082 features, 0 variable features)
-# 2 layers present: counts, data
-# 
-# $`Br3942_V11L05-333_D1`
-# An object of class Seurat 
-# 2082 features across 4938 samples within 1 assay 
-# Active assay: RNA (2082 features, 0 variable features)
-# 2 layers present: counts, data
-# 
-# $`Br8325_V11L05-335_D1`
-# An object of class Seurat 
-# 2082 features across 4483 samples within 1 assay 
-# Active assay: RNA (2082 features, 0 variable features)
-# 2 layers present: counts, data
-# 
-# $`Br8667_V11L05-336_A1`
-# An object of class Seurat 
-# 2082 features across 4539 samples within 1 assay 
-# Active assay: RNA (2082 features, 0 variable features)
-# 2 layers present: counts, data
 
 # ---------
 # run precast
@@ -105,7 +82,7 @@ PRECASTObj <- AddParSetting(PRECASTObj, maxIter = 20,
                             verbose = TRUE, Sigma_equal=FALSE, coreNum=12)
 PRECASTObj <- PRECAST(PRECASTObj, K=7)
 
-#consolidate/ reformat results
+# consolidate/ reformat results
 PRECASTObj <- SelectModel(PRECASTObj, criteria="MBIC")
 PRECASTObj
 # An object of class PRECASTObj 
