@@ -145,6 +145,12 @@ save(spe_sub4,
 save(srt.sets.sub4,
     file = here("processed-data","spatialHPC_SRT","srt_sets_sub4.rda"))
 
+save(PRECASTObj_sub4,
+     file = here("processed-data","spatialHPC_SRT","PRECASTObj_sub4.rda"))
+
+save(seuInt_sub4,
+     file = here("processed-data","spatialHPC_SRT","seuInt_sub4.rda"))
+
 write.csv(seuInt_sub4@meta.data, 
         here("processed-data","spatialHPC_SRT",
         "seuInt_sub4-hpc_k-7_svgs_metadata.csv"), 
