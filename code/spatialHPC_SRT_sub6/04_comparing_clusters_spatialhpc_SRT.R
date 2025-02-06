@@ -38,6 +38,7 @@ spe_sub6$precast_k7_nobias_ordered <- factor(spe_sub6$precast_k7_nobias,
 spe_sub6 <- logNormCounts(spe_sub6)
 markers <- c("MBP","GFAP","SPARCL1","FIBCD1",
             "COL5A2","KCNQ5","CARTPT","PCDH8","CALB1")
+  # genes of interest for visualization in the heatmap
 
 png(here("plots", "spatialHPC_SRT","cluster_heatmap_with_bias_sub6.png"), 
     width=5, height=5, units="in", res=300)
