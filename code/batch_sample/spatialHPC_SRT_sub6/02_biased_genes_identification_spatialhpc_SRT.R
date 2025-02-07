@@ -18,7 +18,7 @@ length(SVGs_sub6) # 2333
 
 batch_df_sub6 <- BiasDetect::featureSelect(spe_sub6, 
             batch_effect = "sample_id", VGs = SVGs_sub6)
-head(batch_df)
+head(batch_df_sub6)
 # gene gene_name dev_default rank_default dev_batch rank_batch      d_diff    nSD_dev
 # 1 ENSG00000131584     ACAP3    15248.39         1549  15123.92       1515 0.008230092 -0.6120571
 # 2 ENSG00000175756  AURKAIP1    19044.93         1024  19017.70        958 0.001432143 -0.7366072
@@ -35,32 +35,32 @@ head(batch_df)
 # 6     -5 -0.1123860
 
 # list bias as data frame
-bias <- BiasDetect::biasDetect(batch_df = batch_df_sub6, nSD_dev = 10, nSD_rank = 5)
+bias_sub6 <- BiasDetect::biasDetect(batch_df = batch_df_sub6, nSD_dev = 10, nSD_rank = 5)
 
 # display bias in plots
-bias_plots <- BiasDetect::biasDetect(batch_df = batch_df_sub6, 
+bias_plots_sub6 <- BiasDetect::biasDetect(batch_df = batch_df_sub6, 
                         nSD_dev = 10, nSD_rank = 5, visual = TRUE)
 # deviance
-png(here("plots", "spatialHPC_SRT","biased_iden_dev.png"), 
+png(here("plots", "spatialHPC_SRT","biased_iden_dev_sub6.png"), 
       width=5, height=5, units="in", res=300)
-p1_dev <- bias_plots$deviance
+p1_dev <- bias_plots_sub6$deviance
 p1_dev
 dev.off()
 
 # rank
-png(here("plots", "spatialHPC_SRT","biased_iden_rank.png"), 
+png(here("plots", "spatialHPC_SRT","biased_iden_rank_sub6.png"), 
     width=5, height=5, units="in", res=300)
-p2_rank <- bias_plots$rank
+p2_rank <- bias_plots_sub6$rank
 p2_rank
 dev.off()
 
 # -----------
 # save object
 # -----------
-write.csv(batch_df, 
+write.csv(batch_df_sub6, 
     here("processed-data","spatialHPC_SRT",
-        "hpc_bindev_default-sample_svgs-only.csv"), 
+        "hpc_bindev_default-sample_svgs-only_sub6.csv"), 
     row.names=FALSE)
 
-save(bias,
-    file = here("processed-data","spatialHPC_SRT","hpc_biased_features.rda"))
+save(bias_sub6,
+    file = here("processed-data","spatialHPC_SRT","hpc_biased_features_sub6.rda"))
