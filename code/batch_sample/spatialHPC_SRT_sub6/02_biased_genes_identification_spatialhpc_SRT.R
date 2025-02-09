@@ -34,7 +34,7 @@ head(batch_df_sub6)
 # 5    -46 -1.0339511
 # 6     -5 -0.1123860
 
-# Figure
+# Figure - nSD_dev
 sd.interval = 5
 batch_df_sub6$nSD.bin_dev = cut(abs(batch_df_sub6$nSD_dev), right=FALSE,
                            breaks=seq(0,max(batch_df_sub6$nSD_dev)+sd.interval, 
@@ -44,8 +44,7 @@ batch_df_sub6$nSD.bin_dev = cut(abs(batch_df_sub6$nSD_dev), right=FALSE,
 col.pal = RColorBrewer::brewer.pal(length(unique(batch_df_sub6$nSD.bin_dev)), "YlOrRd")
 col.pal[1] = "grey"
 
-png(here("plots", "spatialHPC_SRT","SVGs_nSD_dev_sub6.png"), 
-    width=5, height=5, units="in", res=300)
+png(here("plots", "spatialHPC_SRT","SVGs_nSD_dev_sub6.png"))
 dev3 = ggplot(batch_df_sub6, aes(x=d_diff, fill=nSD.bin_dev))+
   geom_histogram(color="grey20", bins=50)+
   scale_fill_manual(values=col.pal)+
@@ -56,15 +55,37 @@ dev3 = ggplot(batch_df_sub6, aes(x=d_diff, fill=nSD.bin_dev))+
   theme_bw()+
   theme(legend.position="inside",legend.position.inside=c(.8,.7),
         aspect.ratio=1)
+dev3
 dev.off()
 
+# Figure - nSD_rank
+sd.interval = 6
+batch_df_sub6$nSD.bin_rank = cut(abs(batch_df_sub6$nSD_rank), right=FALSE,
+                             breaks=seq(0,max(batch_df_sub6$nSD_rank)+sd.interval, 
+                                        by=sd.interval),
+                             include.lowest=TRUE)
+
+col.pal3 = RColorBrewer::brewer.pal(length(unique(batch_df_sub6$nSD.bin_rank)), "YlOrRd")
+col.pal3[1] = "grey"
+
+png(here("plots", "spatialHPC_SRT","SVGs_nSD_rank_sub6.png"))
+rank4 <- ggplot(batch_df_sub6, aes(x=r_diff, fill=nSD.bin_rank))+
+  geom_histogram(color="grey20", bins=30)+
+  scale_fill_manual(values=col.pal3)+
+  labs(x="rank difference", fill="n abs(SD)", y="# genes", title="nSD bin width = 5")+
+  scale_y_continuous(trans = scales::pseudo_log_trans(sigma = 1),
+                     breaks=10^(0:4), labels=format(10^(0:4), scientific=F))+
+  theme_bw()+theme(legend.position="inside",legend.position.inside=c(.8,.7))
+
+rank4
+dev.off()
 
 # list bias as data frame
-bias_sub6 <- BiasDetect::biasDetect(batch_df = batch_df_sub6, nSD_dev = 5, nSD_rank = 3)
+bias_sub6 <- BiasDetect::biasDetect(batch_df = batch_df_sub6, nSD_dev = 5, nSD_rank = 5)
 
 # display bias in plots
 bias_plots_sub6 <- BiasDetect::biasDetect(batch_df = batch_df_sub6, 
-                        nSD_dev = 10, nSD_rank = 5, visual = TRUE)
+                        nSD_dev = 5, nSD_rank = 5, visual = TRUE)
 # deviance
 png(here("plots", "spatialHPC_SRT","biased_iden_dev_sub6.png"), 
       width=5, height=5, units="in", res=300)

@@ -132,7 +132,7 @@ preobj_sub6 <- CreatePRECASTObject(seuList = srt.sets.sub6,
 PRECASTObj_sub6 <- AddAdjList(preobj_sub6, platform = "Visium")
 PRECASTObj_sub6 <- AddParSetting(PRECASTObj_sub6, maxIter = 20, 
                             verbose = TRUE, Sigma_equal=FALSE, coreNum=12)
-PRECASTObj_sub6 <- PRECAST(PRECASTObj_sub6, K=7)
+PRECASTObj_sub6 <- PRECAST(PRECASTObj_sub6, K=6)
 
 #consolidate/ reformat results
 PRECASTObj_sub6 <- SelectModel(PRECASTObj_sub6, criteria="MBIC")
