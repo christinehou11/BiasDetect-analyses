@@ -1,5 +1,7 @@
 suppressPackageStartupMessages({
     library(Seurat)
+    library(SummarizedExperiment)
+    library(SpatialExperiment)
     library(PRECAST)
     library(dplyr)
     library(here)

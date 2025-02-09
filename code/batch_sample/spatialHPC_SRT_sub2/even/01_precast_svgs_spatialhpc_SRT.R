@@ -34,50 +34,49 @@ spe
 # imgData names(4): sample_id image_id data scaleFactor
 
 # ---------
-# choose the subset (4 samples) from raw SRT data
+# choose the subset (2 samples) from raw SRT data
 # ---------
 fix_order = distinct(as.data.frame(colData(spe)), slide, array, brnum, sample_id, position, sex) %>% 
   arrange(slide, array)
-sub4 = fix_order$sample_id[c(14,16,
-                             20,21)]
-spe_sub4 = spe[,spe$sample_id %in% sub4] # 31483, 18945
+sub2 = fix_order$sample_id[c(14,16)]
+spe_sub2 = spe[,spe$sample_id %in% sub2] # 31483, 9923
 
 # ---------
 # filtered the SVGs from selected samples
 # ---------
 load(here("raw-data","spatialHPC_SRT","nnSVG_outs_HE_only.rda"))
+res_ranks
 
-res_df_sub4 <- pivot_longer(
+res_df_sub2 <- pivot_longer(
   rownames_to_column(as.data.frame(res_ranks), var<-"gene_id"), 
   colnames(res_ranks), names_to="sample_id", values_to="rank", 
   values_drop_na=T)
 
-res_df2_sub4 <- filter(res_df_sub4,
-    sample_id %in% c("V11L05-333_B1","V11L05-333_D1","V11L05-335_D1","V11L05-336_A1"),
+res_df2_sub2 <- filter(res_df_sub2,
+    sample_id %in% c("V11L05-333_B1","V11L05-333_D1"),
         rank <= 2000) # top 2k sig features
-nrow(res_df2_sub4) # 7559, 3
+nrow(res_df2_sub2) # 4000, 3
 
-svgs_sub4 <- group_by(res_df2_sub4, gene_id) %>% 
+svgs_sub2 <- group_by(res_df2_sub2, gene_id) %>% 
   tally() %>% 
   filter(n>1) # >1 sample
-
-nrow(svgs_sub4) # 2082
+nrow(svgs_sub2) # 1498
 
 # ---------
 # reformatted to SpatialExperiment object
 # ---------
-spe_sub4 <- spe_sub4[rowData(spe_sub4)$gene_id %in% svgs_sub4$gene_id,]
-rownames(spe_sub4) <- rowData(spe_sub4)$gene_id
-dim(spe_sub4) # 2082, 18945
+spe_sub2 <- spe_sub2[rowData(spe_sub2)$gene_id %in% svgs_sub2$gene_id,]
+rownames(spe_sub2) <- rowData(spe_sub2)$gene_id
+dim(spe_sub2) # 1498, 9923
 
 # ---------
 # reformat to seurat list
 # ---------
-l2_sub4 = unique(spe_sub4$sample_id)
-names(l2_sub4) = l2_sub4
-l2_sub4 = lapply(l2_sub4, function(x) spe_sub4[,colData(spe_sub4)$sample_id==x])
+l2_sub2 = unique(spe_sub2$sample_id)
+names(l2_sub2) = l2_sub2
+l2_sub2 = lapply(l2_sub2, function(x) spe_sub2[,colData(spe_sub2)$sample_id==x])
 
-srt.sets.sub4 = lapply(l2_sub4, function(x) {
+srt.sets.sub2 = lapply(l2_sub2, function(x) {
     colnames(counts(x)) <- rownames(colData(x))
     colData(x)$col <- spatialCoords(x)[,"pxl_col_in_fullres"]
     colData(x)$row <- spatialCoords(x)[,"pxl_row_in_fullres"]
@@ -86,74 +85,62 @@ srt.sets.sub4 = lapply(l2_sub4, function(x) {
                             min.features = 0, min.cells = 0)
     CreateSeuratObject(a1, meta.data = as.data.frame(colData(x)))
 })
-srt.sets.sub4
+srt.sets.sub2
 # $`V11L05-333_B1`
 # An object of class Seurat 
-# 2082 features across 4985 samples within 1 assay 
-# Active assay: RNA (2082 features, 0 variable features)
+# 1498 features across 4985 samples within 1 assay 
+# Active assay: RNA (1498 features, 0 variable features)
 # 2 layers present: counts, data
 # 
 # $`V11L05-333_D1`
 # An object of class Seurat 
-# 2082 features across 4938 samples within 1 assay 
-# Active assay: RNA (2082 features, 0 variable features)
-# 2 layers present: counts, data
-# 
-# $`V11L05-335_D1`
-# An object of class Seurat 
-# 2082 features across 4483 samples within 1 assay 
-# Active assay: RNA (2082 features, 0 variable features)
-# 2 layers present: counts, data
-# 
-# $`V11L05-336_A1`
-# An object of class Seurat 
-# 2082 features across 4539 samples within 1 assay 
-# Active assay: RNA (2082 features, 0 variable features)
+# 1498 features across 4938 samples within 1 assay 
+# Active assay: RNA (1498 features, 0 variable features)
 # 2 layers present: counts, data
 
 # ---------
 # run precast
 # ---------
-preobj_sub4 <- CreatePRECASTObject(seuList = srt.sets.sub4,
-                            customGenelist=rownames(spe_sub4),
+preobj_sub2 <- CreatePRECASTObject(seuList = srt.sets.sub2,
+                            customGenelist=rownames(spe_sub2),
                             premin.spots=0, premin.features=0, 
                             postmin.spots=0, postmin.features=0)
-PRECASTObj_sub4 <- AddAdjList(preobj_sub4, platform = "Visium")
-PRECASTObj_sub4 <- AddParSetting(PRECASTObj_sub4, maxIter = 20, 
+PRECASTObj_sub2 <- AddAdjList(preobj_sub2, platform = "Visium")
+PRECASTObj_sub2 <- AddParSetting(PRECASTObj_sub2, maxIter = 20, 
                             verbose = TRUE, Sigma_equal=FALSE, coreNum=12)
-PRECASTObj_sub4 <- PRECAST(PRECASTObj_sub4, K=7)
+PRECASTObj_sub2 <- PRECAST(PRECASTObj_sub2, K=7)
 
 #consolidate/ reformat results
-PRECASTObj_sub4 <- SelectModel(PRECASTObj_sub4, criteria="MBIC")
-PRECASTObj_sub4
+PRECASTObj_sub2 <- SelectModel(PRECASTObj_sub2, criteria="MBIC")
+PRECASTObj_sub2
 # An object of class PRECASTObj 
-# with 4 datasets and  18945 spots in total, with spots for each dataset:  4985 4938 4483 4539 
-# 2081 common variable genes selected
+# with 4 datasets and  9923 spots in total, with spots for each dataset:  4985 4938 4483 4539 
+# 1498 common variable genes selected
 
-seuInt_sub4 <- IntegrateSpaData(PRECASTObj_sub4, species = "Human")
-seuInt_sub4
+seuInt_sub2 <- IntegrateSpaData(PRECASTObj_sub2, species = "Human")
+seuInt_sub2
 # An object of class Seurat 
-# 2081 features across 18945 samples within 1 assay 
-# Active assay: PRE_CAST (2081 features, 0 variable features)
+# 1498 features across 9923 samples within 1 assay 
+# Active assay: PRE_CAST (1498 features, 0 variable features)
 # 2 layers present: counts, data
 # 2 dimensional reductions calculated: PRECAST, position
 
 # -----------
 # save object
 # -----------
-save(spe_sub4,
-    file = here("processed-data","spatialHPC_SRT","spe_sub4.rda"))
+save(spe_sub2,
+    file = here("processed-data","spatialHPC_SRT","spe_sub2.rda"))
 
-save(srt.sets.sub4,
-    file = here("processed-data","spatialHPC_SRT","srt_sets_sub4.rda"))
+save(srt.sets.sub2,
+    file = here("processed-data","spatialHPC_SRT","srt_sets_sub2.rda"))
 
-save(PRECASTObj_sub4,
-     file = here("processed-data","spatialHPC_SRT","PRECASTObj_sub4.rda"))
+save(PRECASTObj_sub2,
+     file = here("processed-data","spatialHPC_SRT","PRECASTObj_sub2.rda"))
 
-save(seuInt_sub4,
-     file = here("processed-data","spatialHPC_SRT","seuInt_sub4.rda"))
+save(seuInt_sub2,
+     file = here("processed-data","spatialHPC_SRT","seuInt_sub2.rda"))
 
-write.csv(seuInt_sub4@meta.data, 
+write.csv(seuInt_sub2@meta.data, 
         here("processed-data","spatialHPC_SRT",
-        "seuInt_sub4-hpc_k-7_svgs_metadata.csv"), 
+        "seuInt_sub2-hpc_k-7_svgs_metadata.csv"), 
         row.names=T)
