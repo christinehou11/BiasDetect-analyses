@@ -44,19 +44,32 @@ spe_sub2 = spe[,spe$sample_id %in% sub2] # 31483, 9923
 # ---------
 # make the features ratio as 2:1 (2/3 from 14 and 1/3 from 16)
 # ---------
-cols_14 <- which(spe$sample_id == fix_order$sample_id[14])
-cols_16 <- which(spe$sample_id == fix_order$sample_id[16])
+cols_14 <- which(spe$sample_id == fix_order$sample_id[14]) # 4985
+cols_16 <- which(spe$sample_id == fix_order$sample_id[16]) # 4938
 
-total_cols <- length(cols_14) + length(cols_16) 
-num_14 <- round((2/3) * total_cols)
-num_16 <- total_cols - num_14
+num_14 <- round((2/3) * length(cols_14)) # 3323
+num_16 <- round((1/3) * length(cols_16)) # 1646
 
-selected_cols_14 <- sample(cols_14, min(num_14, length(cols_14)))
-selected_cols_16 <- sample(cols_16, min(num_16, length(cols_16)))
+selected_cols_14 <- sample(cols_14, num_14)
+selected_cols_16 <- sample(cols_16, num_16)
+selected_cols <- c(selected_cols_14, selected_cols_16) # 4969
 
-selected_cols <- c(selected_cols_14, selected_cols_16)
-spe_sub2_2<- spe[, selected_cols] # 31483  8293
+spe_sub2_2<- spe[, selected_cols] # 31483  4969
 spe_sub2_2
+# class: SpatialExperiment 
+# dim: 31483 4969 
+# metadata(1): Obtained_from
+# assays(2): counts logcounts
+# rownames(31483): MIR1302-2HG AL627309.1 ... AC007325.4 AC007325.2
+# rowData names(7): source type ... gene_type gene_search
+# colnames(4969): GTTAACTATGTTGTCA-1_V11L05-333_B1 ACGTAGATTGCTGATG-1_V11L05-333_B1 ...
+# TGGCTACACTCTACCT-1_V11L05-333_D1 GGTCGGTAATTAGACA-1_V11L05-333_D1
+# colData names(150): sample_id in_tissue ... nmf99 nmf100
+# reducedDimNames(3): 10x_pca 10x_tsne 10x_umap
+# mainExpName: NULL
+# altExpNames(0):
+#   spatialCoords names(2) : pxl_col_in_fullres pxl_row_in_fullres
+# imgData names(4): sample_id image_id data scaleFactor
 
 # ---------
 # filtered the SVGs from selected samples
@@ -84,7 +97,7 @@ nrow(svgs_sub2_2) # 1498
 # ---------
 spe_sub2_2 <- spe_sub2_2[rowData(spe_sub2_2)$gene_id %in% svgs_sub2_2$gene_id,]
 rownames(spe_sub2_2) <- rowData(spe_sub2_2)$gene_id
-dim(spe_sub2_2) # 1498, 8293
+dim(spe_sub2_2) # 1498, 4969
 
 # ---------
 # reformat to seurat list
@@ -105,13 +118,13 @@ srt.sets.sub2_2 = lapply(l2_sub2_2, function(x) {
 srt.sets.sub2_2
 # $`V11L05-333_B1`
 # An object of class Seurat 
-# 1498 features across 4985 samples within 1 assay 
+# 1498 features across 3323 samples within 1 assay 
 # Active assay: RNA (1498 features, 0 variable features)
 # 2 layers present: counts, data
 # 
 # $`V11L05-333_D1`
 # An object of class Seurat 
-# 1498 features across 3308 samples within 1 assay 
+# 1498 features across 1646 samples within 1 assay 
 # Active assay: RNA (1498 features, 0 variable features)
 # 2 layers present: counts, data
 
@@ -131,13 +144,13 @@ PRECASTObj_sub2_2 <- PRECAST(PRECASTObj_sub2_2, K=7)
 PRECASTObj_sub2_2 <- SelectModel(PRECASTObj_sub2_2, criteria="MBIC")
 PRECASTObj_sub2_2
 # An object of class PRECASTObj 
-# with 2 datasets and  8293 spots in total, with spots for each dataset:  4985 3308  
+# with 2 datasets and  4969 spots in total, with spots for each dataset:  3323 1646  
 # 1498 common variable genes selected
 
 seuInt_sub2_2 <- IntegrateSpaData(PRECASTObj_sub2_2, species = "Human")
 seuInt_sub2_2
 # An object of class Seurat 
-# 1498 features across 8293 samples within 1 assay 
+# 1498 features across 4969 samples within 1 assay 
 # Active assay: PRE_CAST (1498 features, 0 variable features)
 # 2 layers present: counts, data
 # 2 dimensional reductions calculated: PRECAST, position
