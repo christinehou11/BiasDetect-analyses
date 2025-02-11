@@ -42,41 +42,58 @@ sub2 = fix_order$sample_id[c(14,16)]
 spe_sub2 = spe[,spe$sample_id %in% sub2] # 31483, 9923
 
 # ---------
+# make the features ratio as 2:1 (2/3 from 14 and 1/3 from 16)
+# ---------
+cols_14 <- which(spe$sample_id == fix_order$sample_id[14])
+cols_16 <- which(spe$sample_id == fix_order$sample_id[16])
+
+total_cols <- length(cols_14) + length(cols_16) 
+num_14 <- round((2/3) * total_cols)
+num_16 <- total_cols - num_14
+
+selected_cols_14 <- sample(cols_14, min(num_14, length(cols_14)))
+selected_cols_16 <- sample(cols_16, min(num_16, length(cols_16)))
+
+selected_cols <- c(selected_cols_14, selected_cols_16)
+spe_sub2_2<- spe[, selected_cols] # 31483  8293
+spe_sub2_2
+
+# ---------
 # filtered the SVGs from selected samples
 # ---------
 load(here("raw-data","spatialHPC_SRT","nnSVG_outs_HE_only.rda"))
 res_ranks
 
-res_df_sub2 <- pivot_longer(
+res_df_sub2_2 <- pivot_longer(
   rownames_to_column(as.data.frame(res_ranks), var<-"gene_id"), 
   colnames(res_ranks), names_to="sample_id", values_to="rank", 
   values_drop_na=T)
 
-res_df2_sub2 <- filter(res_df_sub2,
+res_df2_sub2_2 <- filter(res_df_sub2_2,
     sample_id %in% c("V11L05-333_B1","V11L05-333_D1"),
         rank <= 2000) # top 2k sig features
-nrow(res_df2_sub2) # 4000, 3
+nrow(res_df2_sub2_2) # 4000, 3
 
-svgs_sub2 <- group_by(res_df2_sub2, gene_id) %>% 
+svgs_sub2_2 <- group_by(res_df2_sub2_2, gene_id) %>% 
   tally() %>% 
   filter(n>1) # >1 sample
-nrow(svgs_sub2) # 1498
+nrow(svgs_sub2_2) # 1498
 
 # ---------
 # reformatted to SpatialExperiment object
 # ---------
-spe_sub2 <- spe_sub2[rowData(spe_sub2)$gene_id %in% svgs_sub2$gene_id,]
-rownames(spe_sub2) <- rowData(spe_sub2)$gene_id
-dim(spe_sub2) # 1498, 9923
+spe_sub2_2 <- spe_sub2_2[rowData(spe_sub2_2)$gene_id %in% svgs_sub2_2$gene_id,]
+rownames(spe_sub2_2) <- rowData(spe_sub2_2)$gene_id
+dim(spe_sub2_2) # 1498, 8293
 
 # ---------
 # reformat to seurat list
 # ---------
-l2_sub2 = unique(spe_sub2$sample_id)
-names(l2_sub2) = l2_sub2
-l2_sub2 = lapply(l2_sub2, function(x) spe_sub2[,colData(spe_sub2)$sample_id==x])
+l2_sub2_2 = unique(spe_sub2_2$sample_id)
+names(l2_sub2_2) = l2_sub2_2
+l2_sub2_2 = lapply(l2_sub2_2, function(x) spe_sub2_2[,colData(spe_sub2_2)$sample_id==x])
 
-srt.sets.sub2 = lapply(l2_sub2, function(x) {
+srt.sets.sub2_2 = lapply(l2_sub2_2, function(x) {
     colnames(counts(x)) <- rownames(colData(x))
     colData(x)$col <- spatialCoords(x)[,"pxl_col_in_fullres"]
     colData(x)$row <- spatialCoords(x)[,"pxl_row_in_fullres"]
@@ -85,7 +102,7 @@ srt.sets.sub2 = lapply(l2_sub2, function(x) {
                             min.features = 0, min.cells = 0)
     CreateSeuratObject(a1, meta.data = as.data.frame(colData(x)))
 })
-srt.sets.sub2
+srt.sets.sub2_2
 # $`V11L05-333_B1`
 # An object of class Seurat 
 # 1498 features across 4985 samples within 1 assay 
@@ -94,33 +111,33 @@ srt.sets.sub2
 # 
 # $`V11L05-333_D1`
 # An object of class Seurat 
-# 1498 features across 4938 samples within 1 assay 
+# 1498 features across 3308 samples within 1 assay 
 # Active assay: RNA (1498 features, 0 variable features)
 # 2 layers present: counts, data
 
 # ---------
 # run precast
 # ---------
-preobj_sub2 <- CreatePRECASTObject(seuList = srt.sets.sub2,
-                            customGenelist=rownames(spe_sub2),
+preobj_sub2_2 <- CreatePRECASTObject(seuList = srt.sets.sub2_2,
+                            customGenelist=rownames(spe_sub2_2),
                             premin.spots=0, premin.features=0, 
                             postmin.spots=0, postmin.features=0)
-PRECASTObj_sub2 <- AddAdjList(preobj_sub2, platform = "Visium")
-PRECASTObj_sub2 <- AddParSetting(PRECASTObj_sub2, maxIter = 20, 
+PRECASTObj_sub2_2 <- AddAdjList(preobj_sub2_2, platform = "Visium")
+PRECASTObj_sub2_2 <- AddParSetting(PRECASTObj_sub2_2, maxIter = 20, 
                             verbose = TRUE, Sigma_equal=FALSE, coreNum=12)
-PRECASTObj_sub2 <- PRECAST(PRECASTObj_sub2, K=7)
+PRECASTObj_sub2_2 <- PRECAST(PRECASTObj_sub2_2, K=7)
 
 #consolidate/ reformat results
-PRECASTObj_sub2 <- SelectModel(PRECASTObj_sub2, criteria="MBIC")
-PRECASTObj_sub2
+PRECASTObj_sub2_2 <- SelectModel(PRECASTObj_sub2_2, criteria="MBIC")
+PRECASTObj_sub2_2
 # An object of class PRECASTObj 
-# with 4 datasets and  9923 spots in total, with spots for each dataset:  4985 4938 4483 4539 
+# with 2 datasets and  8293 spots in total, with spots for each dataset:  4985 3308  
 # 1498 common variable genes selected
 
-seuInt_sub2 <- IntegrateSpaData(PRECASTObj_sub2, species = "Human")
-seuInt_sub2
+seuInt_sub2_2 <- IntegrateSpaData(PRECASTObj_sub2_2, species = "Human")
+seuInt_sub2_2
 # An object of class Seurat 
-# 1498 features across 9923 samples within 1 assay 
+# 1498 features across 8293 samples within 1 assay 
 # Active assay: PRE_CAST (1498 features, 0 variable features)
 # 2 layers present: counts, data
 # 2 dimensional reductions calculated: PRECAST, position
@@ -128,19 +145,19 @@ seuInt_sub2
 # -----------
 # save object
 # -----------
-save(spe_sub2,
-    file = here("processed-data","spatialHPC_SRT","spe_sub2.rda"))
+save(spe_sub2_2,
+    file = here("processed-data","spatialHPC_SRT","spe_sub2_2.rda"))
 
-save(srt.sets.sub2,
-    file = here("processed-data","spatialHPC_SRT","srt_sets_sub2.rda"))
+save(srt.sets.sub2_2,
+    file = here("processed-data","spatialHPC_SRT","srt_sets_sub2_2.rda"))
 
-save(PRECASTObj_sub2,
-     file = here("processed-data","spatialHPC_SRT","PRECASTObj_sub2.rda"))
+save(PRECASTObj_sub2_2,
+     file = here("processed-data","spatialHPC_SRT","PRECASTObj_sub2_2.rda"))
 
-save(seuInt_sub2,
-     file = here("processed-data","spatialHPC_SRT","seuInt_sub2.rda"))
+save(seuInt_sub2_2,
+     file = here("processed-data","spatialHPC_SRT","seuInt_sub2_2.rda"))
 
-write.csv(seuInt_sub2@meta.data, 
+write.csv(seuInt_sub2_2@meta.data, 
         here("processed-data","spatialHPC_SRT",
-        "seuInt_sub2-hpc_k-7_svgs_metadata.csv"), 
+        "seuInt_sub2_2-hpc_k-7_svgs_metadata.csv"), 
         row.names=T)

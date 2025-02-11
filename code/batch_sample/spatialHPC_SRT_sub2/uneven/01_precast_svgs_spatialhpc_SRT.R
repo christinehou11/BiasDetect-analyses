@@ -114,14 +114,14 @@ PRECASTObj_sub2 <- PRECAST(PRECASTObj_sub2, K=7)
 PRECASTObj_sub2 <- SelectModel(PRECASTObj_sub2, criteria="MBIC")
 PRECASTObj_sub2
 # An object of class PRECASTObj 
-# with 4 datasets and  18945 spots in total, with spots for each dataset:  4985 4938 4483 4539 
-# 2081 common variable genes selected
+# with 4 datasets and  9923 spots in total, with spots for each dataset:  4985 4938 4483 4539 
+# 1498 common variable genes selected
 
 seuInt_sub2 <- IntegrateSpaData(PRECASTObj_sub2, species = "Human")
 seuInt_sub2
 # An object of class Seurat 
-# 2081 features across 18945 samples within 1 assay 
-# Active assay: PRE_CAST (2081 features, 0 variable features)
+# 1498 features across 9923 samples within 1 assay 
+# Active assay: PRE_CAST (1498 features, 0 variable features)
 # 2 layers present: counts, data
 # 2 dimensional reductions calculated: PRECAST, position
 
