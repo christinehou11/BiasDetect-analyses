@@ -8,42 +8,42 @@ suppressPackageStartupMessages({
 # ---------
 # load data
 # ---------
-load(here("processed-data","spatialHPC_SRT","spe_sub2.rda"))
+load(here("processed-data","spatialHPC_SRT","spe_sub2_2.rda"))
 
 # ---------
 # biased gene identification
 # ---------
-SVGs <- rowData(spe_sub2)$gene_id
-batch_df_sub2 <- BiasDetect::featureSelect(spe_sub2, 
+SVGs <- rowData(spe_sub2_2)$gene_id
+batch_df_sub2_2 <- BiasDetect::featureSelect(spe_sub2_2, 
                                     batch_effect = "sample_id", VGs = SVGs)
-head(batch_df_sub2)
-#            gene gene_name dev_default rank_default dev_batch rank_batch      d_diff 
-# ENSG00000078369      GNB1   12534.709          503 12489.860        494 0.003590815
-# ENSG00000187730     GABRD    8220.839         1201  8035.515       1216 0.023063058
-# ENSG00000067606     PRKCZ    9847.529          909  9816.229        901 0.003188580
-# ENSG00000158109    TPRG1L    8925.409         1072  8912.729       1053 0.001422636
-# ENSG00000069424    KCNAB2   11927.047          578 11885.417        567 0.003502675 
-# ENSG00000116254      CHD5    7778.070         1268  7724.372       1261 0.006951753
-#    nSD_dev r_diff   nSD_rank
-# -0.4554443     -9 -0.6683004
-#  0.9450326     15  1.1138339
-# -0.4843737     -8 -0.5940448
-# -0.6113833    -19 -1.4108563
-# -0.4617835    -11 -0.8168115
-# -0.2137199     -7 -0.5197892
+head(batch_df_sub2_2)
+#            gene gene_name dev_default rank_default dev_batch
+# ENSG00000078369      GNB1    6068.537          531  6056.118
+# ENSG00000187730     GABRD    4119.284         1189  4061.836
+# ENSG00000067606     PRKCZ    4900.011          909  4874.738
+# ENSG00000158109    TPRG1L    4336.524         1110  4321.293
+# ENSG00000069424    KCNAB2    5774.298          615  5757.917
+# ENSG00000116254      CHD5    3762.140         1292  3751.480
+# rank_batch      d_diff    nSD_dev r_diff   nSD_rank
+#        523 0.002050745 -0.4284529     -8 -0.7066865
+#       1197 0.014143304  0.3600388      8  0.7066865
+#        904 0.005184634 -0.2241086     -5 -0.4416790
+#       1098 0.003524823 -0.3323360    -12 -1.0600297
+#        602 0.002844943 -0.3766674    -13 -1.1483655
+#       1288 0.002841432 -0.3768963     -4 -0.3533432
 
 # Figure - nSD_dev
 sd.interval = 4
-batch_df_sub2$nSD.bin_dev = cut(abs(batch_df_sub2$nSD_dev), right=FALSE,
-                                breaks=seq(0,max(batch_df_sub2$nSD_dev)+sd.interval, 
+batch_df_sub2_2$nSD.bin_dev = cut(abs(batch_df_sub2_2$nSD_dev), right=FALSE,
+                                breaks=seq(0,max(batch_df_sub2_2$nSD_dev)+sd.interval, 
                                            by=sd.interval),
                                 include.lowest=TRUE)
 
-col.pal = RColorBrewer::brewer.pal(length(unique(batch_df_sub2$nSD.bin_dev)), "YlOrRd")
+col.pal = RColorBrewer::brewer.pal(length(unique(batch_df_sub2_2$nSD.bin_dev)), "YlOrRd")
 col.pal[1] = "grey"
 
-png(here("plots", "spatialHPC_SRT","SVGs_nSD_dev_sub2.png"))
-dev3 = ggplot(batch_df_sub2, aes(x=d_diff, fill=nSD.bin_dev))+
+png(here("plots", "spatialHPC_SRT","SVGs_nSD_dev_sub2_2.png"))
+dev3 = ggplot(batch_df_sub2_2, aes(x=d_diff, fill=nSD.bin_dev))+
   geom_histogram(color="grey20", bins=50)+
   scale_fill_manual(values=col.pal)+
   labs(x="\u0394 deviance",
@@ -57,17 +57,17 @@ dev3
 dev.off()
 
 # Figure - nSD_rank
-sd.interval = 3
-batch_df_sub2$nSD.bin_rank = cut(abs(batch_df_sub2$nSD_rank), right=FALSE,
-                                 breaks=seq(0,max(batch_df_sub2$nSD_rank)+sd.interval, 
+sd.interval = 5
+batch_df_sub2_2$nSD.bin_rank = cut(abs(batch_df_sub2_2$nSD_rank), right=FALSE,
+                                 breaks=seq(0,max(batch_df_sub2_2$nSD_rank)+sd.interval, 
                                             by=sd.interval),
                                  include.lowest=TRUE)
 
-col.pal3 = RColorBrewer::brewer.pal(length(unique(batch_df_sub2$nSD.bin_rank)), "YlOrRd")
+col.pal3 = RColorBrewer::brewer.pal(length(unique(batch_df_sub2_2$nSD.bin_rank)), "YlOrRd")
 col.pal3[1] = "grey"
 
-png(here("plots", "spatialHPC_SRT","SVGs_nSD_rank_sub2.png"))
-rank4 <- ggplot(batch_df_sub2, aes(x=r_diff, fill=nSD.bin_rank))+
+png(here("plots", "spatialHPC_SRT","SVGs_nSD_rank_sub2_2.png"))
+rank4 <- ggplot(batch_df_sub2_2, aes(x=r_diff, fill=nSD.bin_rank))+
   geom_histogram(color="grey20", bins=30)+
   scale_fill_manual(values=col.pal3)+
   labs(x="rank difference", fill="n abs(SD)", y="# genes", title="nSD bin width = 5")+
@@ -79,20 +79,20 @@ rank4
 dev.off()
 
 # list bias as data frame
-bias <- BiasDetect::biasDetect(batch_df = batch_df_sub2, nSD_dev = 4, nSD_rank = 4)
+bias_sub2_2 <- BiasDetect::biasDetect(batch_df = batch_df_sub2_2, nSD_dev = 4, nSD_rank = 5)
 
 # display bias in plots
-bias_plots <- BiasDetect::biasDetect(batch_df = batch_df_sub2, 
+bias_plots <- BiasDetect::biasDetect(batch_df = batch_df_sub2_2, 
                         nSD_dev = 4, nSD_rank = 4, visual = TRUE)
 # deviance
-png(here("plots", "spatialHPC_SRT","biased_iden_dev_sub2.png"), 
+png(here("plots", "spatialHPC_SRT","biased_iden_dev_sub2_2.png"), 
       width=5, height=5, units="in", res=300)
 p1_dev <- bias_plots$deviance
 p1_dev
 dev.off()
 
 # rank
-png(here("plots", "spatialHPC_SRT","biased_iden_rank_sub2.png"), 
+png(here("plots", "spatialHPC_SRT","biased_iden_rank_sub2_2.png"), 
     width=5, height=5, units="in", res=300)
 p2_rank <- bias_plots$rank
 p2_rank
@@ -101,11 +101,11 @@ dev.off()
 # -----------
 # save object
 # -----------
-write.csv(batch_df_sub2, 
+write.csv(batch_df_sub2_2, 
     here("processed-data","spatialHPC_SRT",
-        "hpc_bindev_default-sample_svgs-only_sub2.csv"), 
+        "hpc_bindev_default-sample_svgs-only_sub2_2.csv"), 
     row.names=FALSE)
 
-save(bias,
-    file = here("processed-data","spatialHPC_SRT","hpc_biased_features_sub2.rda"))
+save(bias_sub2_2,
+    file = here("processed-data","spatialHPC_SRT","hpc_biased_features_sub2_2.rda"))
 

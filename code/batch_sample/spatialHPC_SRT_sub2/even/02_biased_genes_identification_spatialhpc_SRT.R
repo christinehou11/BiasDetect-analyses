@@ -57,7 +57,7 @@ dev3
 dev.off()
 
 # Figure - nSD_rank
-sd.interval = 3
+sd.interval = 4
 batch_df_sub2$nSD.bin_rank = cut(abs(batch_df_sub2$nSD_rank), right=FALSE,
                                  breaks=seq(0,max(batch_df_sub2$nSD_rank)+sd.interval, 
                                             by=sd.interval),
@@ -70,7 +70,7 @@ png(here("plots", "spatialHPC_SRT","SVGs_nSD_rank_sub2.png"))
 rank4 <- ggplot(batch_df_sub2, aes(x=r_diff, fill=nSD.bin_rank))+
   geom_histogram(color="grey20", bins=30)+
   scale_fill_manual(values=col.pal3)+
-  labs(x="rank difference", fill="n abs(SD)", y="# genes", title="nSD bin width = 5")+
+  labs(x="rank difference", fill="n abs(SD)", y="# genes", title="nSD bin width = 4")+
   scale_y_continuous(trans = scales::pseudo_log_trans(sigma = 1),
                      breaks=10^(0:4), labels=format(10^(0:4), scientific=F))+
   theme_bw()+theme(legend.position="inside",legend.position.inside=c(.8,.7))
